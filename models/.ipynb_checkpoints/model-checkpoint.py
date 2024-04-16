@@ -13,7 +13,7 @@ class ERM(nn.module):
 
     def __init__(self, input_shape, num_classes, num_domains, args):
         super(ERM, self).__init__(input_shape, num_classes, num_domains)
-        self.featurizer = networks.Featurizer(input_shape)
+        self.featurizer = networks.Featurizer()
         self.classifier,out = networks.Classifier(
             self.featurizer.n_outputs,
             num_classes)
@@ -43,11 +43,10 @@ class ERM(nn.module):
 
 
 class IDFM(ERM):
-    def __init__(self, input_shape, num_classes, num_domains, hparams):
-        super(RSC, self).__init__(input_shape, num_classes, num_domains,
+    def __init__(self, num_classes, num_domains, hparams):
+        super(RSC, self).__init__(num_classes, num_domains,
                                    hparams)
-        self.drop_f = (1 - hparams['rsc_f_drop_factor']) * 100
-        self.drop_b = (1 - hparams['rsc_b_drop_factor']) * 100
+        self.drop_f = (1 - 0.33) * 100
         self.num_classes = num_classes
         self.num_domains = num_domains
 
@@ -84,18 +83,18 @@ class IDFM(ERM):
         all_p_muted = self.final_classes(all_f_muted)
 
         # Section 3.3: Batch Percentage
-        all_s = F.softmax(all_p, dim=1)
-        all_s_muted = F.softmax(all_p_muted, dim=1)
-        changes = (all_s * all_o).sum(1) - (all_s_muted * all_o).sum(1)
-        percentile = np.percentile(changes.detach().cpu(), self.drop_b)
-        mask_b = changes.lt(percentile).float().view(-1, 1)
-        mask = torch.logical_or(mask_f, mask_b).float()
+        # all_s = F.softmax(all_p, dim=1)
+        # all_s_muted = F.softmax(all_p_muted, dim=1)
+        # changes = (all_s * all_o).sum(1) - (all_s_muted * all_o).sum(1)
+        # percentile = np.percentile(changes.detach().cpu(), self.drop_b)
+        # mask_b = changes.lt(percentile).float().view(-1, 1)
+        # mask = torch.logical_or(mask_f, mask_b).float()
 
         # Equations (3) and (4) again, this time mutting over examples
-        all_p_muted_again = self.classifier(all_f * mask)
+        #all_p_muted_again = self.classifier(all_f * mask)
 
         # Equation (5): update
-        loss = F.cross_entropy(all_p_muted_again, all_y)
+        loss = F.cross_entropy(all_p_muted, all_y)
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()

@@ -17,11 +17,11 @@ class clip(nn.Module):
         for names, params in model.named_parameters():
             params.requires_grad = False
     def forward(self,x):
-        inputs = processor(images=x, return_tensors="pt")
+        #inputs = processor(images=x, return_tensors="pt")
         return self.model.get_image_features(**inputs)
 
 
-def Featurizer(input_shape):
+def Featurizer():
     """Auto-select an appropriate featurizer for the given input shape."""
     return clip()
     
@@ -35,7 +35,7 @@ def Classifier(in_features, out_features):
             torch.nn.Linear(in_features // 2, in_features // 4),
             torch.nn.ReLU()) , in_features // 4
 
-def final(in_features, out_features):
+def domain(in_features, out_features):
     return torch.nn.Linear(in_features, out_features)
 
 

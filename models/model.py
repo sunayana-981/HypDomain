@@ -13,7 +13,7 @@ class ERM(nn.module):
 
     def __init__(self, input_shape, num_classes, num_domains, args):
         super(ERM, self).__init__(input_shape, num_classes, num_domains)
-        self.featurizer = networks.Featurizer(input_shape)
+        self.featurizer = networks.Featurizer()
         self.classifier,out = networks.Classifier(
             self.featurizer.n_outputs,
             num_classes)
@@ -43,11 +43,10 @@ class ERM(nn.module):
 
 
 class IDFM(ERM):
-    def __init__(self, input_shape, num_classes, num_domains, hparams):
-        super(RSC, self).__init__(input_shape, num_classes, num_domains,
+    def __init__(self, num_classes, num_domains, hparams):
+        super(RSC, self).__init__(num_classes, num_domains,
                                    hparams)
-        self.drop_f = (1 - hparams['rsc_f_drop_factor']) * 100
-        self.drop_b = (1 - hparams['rsc_b_drop_factor']) * 100
+        self.drop_f = (1 - 0.33) * 100
         self.num_classes = num_classes
         self.num_domains = num_domains
 
